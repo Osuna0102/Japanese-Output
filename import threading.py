@@ -57,7 +57,7 @@ with sr.Microphone(device_index=0) as mic:
             audio_data = mic.record(phrase_time_limit=10)
             audio_data = audio_data.frame_data
             audio_queue.put(audio_data)
-    except KeyboardInterrupt:
+    except KeyboardInterrupt: 
         pass
 
 # stop the PC input audio stream and transcription thread
