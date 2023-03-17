@@ -1,0 +1,41 @@
+import os
+import unicodedata
+from collections import Counter
+from janome.tokenizer import Tokenizer
+
+# set up the tokenizer for Japanese text
+tokenizer = Tokenizer()
+
+# define the path to the directory containing the text files
+directory_path = "Transcritps"
+
+# loop through each file in the directory
+for filename in os.listdir(directory_path):
+    if filename.endswith(".txt"):
+        filepath = os.path.join(directory_path, filename)
+
+        # read the file contents
+        with open(filepath, encoding="utf-8") as file:
+            text = file.read()
+
+        # count the Japanese characters in the text
+        japanese_chars = [char for char in text if unicodedata.name(char, '').startswith('CJK UNIFIED')]
+        japanese_char_count = len(japanese_chars)
+
+        # segment the Japanese text into words
+        words = [token.surface for token in tokenizer.tokenize(text)]
+        word_count = 0
+        word_freq = Counter()
+        for word in words:
+            if all([unicodedata.name(char, '').startswith('CJK UNIFIED') for char in word]):
+                word_count += 1
+                word_freq[word] += 1
+
+        # print the results
+        print(f"File: {filename}")
+        print(f"Number of Japanese characters: {japanese_char_count}")
+        print(f"Number of words: {word_count}")
+        print("Most common words:")
+        for word, freq in word_freq.most_common(10):
+            print(f"{word}: {freq}")
+        print()
