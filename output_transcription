@@ -1,0 +1,34 @@
+import pyaudio
+import speech_recognition as sr
+
+# create an instance of the PyAudio class
+pa = pyaudio.PyAudio()
+
+# set up a stream to capture the system audio output
+stream = pa.open(format=pyaudio.paInt16,
+                 channels=1,
+                 rate=44100,
+                 input=True,
+                 input_device_index=None,
+                 frames_per_buffer=1024)
+
+# create an instance of the Recognizer class
+r = sr.Recognizer()
+
+# continuously transcribe the audio from the stream
+while True:
+    try:
+        # read audio from the stream
+        audio_data = stream.read(1024)
+
+        # convert raw bytes of audio data to AudioData format
+        audio = sr.AudioData(audio_data, sample_rate=44100, sample_width=2)
+
+        # transcribe the audio
+        text = r.recognize_google(audio, language="ja-JP")
+
+        # print the recognized text
+        print(text)
+
+    except sr.UnknownValueError:
+        pass
