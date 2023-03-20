@@ -36,6 +36,6 @@ for filename in os.listdir(directory_path):
         print(f"Number of Japanese characters: {japanese_char_count}")
         print(f"Number of words: {word_count}")
         print("Most common words:")
-        for word, freq in word_freq.most_common(10):
+        for word, freq in word_freq.most_common(100):
             print(f"{word}: {freq}")
         print()
