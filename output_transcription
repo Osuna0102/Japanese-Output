@@ -1,24 +1,67 @@
-import sounddevice as sd
-import numpy as np
+import os
 import speech_recognition as sr
+from datetime import datetime
 
-# get the device index
-devices = sd.query_devices()
-device_index = None
-for i, device in enumerate(devices):
-    if device['name'] == 'Altavoces (Realtek) ':
-        device_index = i
-        break
+# Create a recognizer object
+r = sr.Recognizer()
 
-# open the audio stream
-with sd.InputStream(device=device_index, channels=1, blocksize=2048, samplerate=44100):
-    r = sr.Recognizer()
+mic_device_index = 3  # Change this index to the appropriate microphone
+
+# Get the current date and time for the filename
+now = datetime.now()
+current_date = now.strftime("%Y-%m-%d")
+
+# Create the 'Transcripts' directory if it doesn't exist
+transcripts_dir = "Transcripts"
+if not os.path.exists(transcripts_dir):
+    os.makedirs(transcripts_dir)
+
+# Create a new text file with the current date
+filename = f"{transcripts_dir}/{current_date}.txt"
+
+# Get the current date and time for the filename
+now = datetime.now()
+current_date = now.strftime("%Y-%m-%d")
+
+# Create a new text file with the current date
+filename = f"Transcripts/{current_date}.txt"
+
+# Check if the file already exists for the current day
+if os.path.isfile(filename):
+    file_mode = "a"
+else:
+    file_mode = "w"
+
+# Open the file in append mode if it already exists, or in write mode if it doesn't
+file = open(filename, file_mode, encoding="utf-8")
+
+# Write the instructions to the file if it's a new file
+if file_mode == "w":
+    file.write("Speak now or press Ctrl-C to stop...\n\n")
+
+try:
     while True:
-        # read the audio data from the stream
-        data = sd.rec(2048, samplerate=44100, channels=1, blocking=True)
+        # Listen for audio input from the microphone
+        # Use the specified microphone device for audio input
+        with sr.Microphone(device_index=mic_device_index) as source:
+            r.adjust_for_ambient_noise(source)
+            print("Listening...")
+            audio = r.listen(source)
 
-        # transcribe the audio data
-        text = r.recognize_google(data, language='ja-JP')
+        # Recognize speech using the Google Speech Recognition API
+        try:    
+            text = r.recognize_google(audio, language="ja-JP")
 
-        # print the transcribed text
-        print(text)
+            # Print the recognized text
+            print(f"You said: {text}\n")
+
+            # Write the recognized text to the file
+            file.write(f"{text}\n\n")
+        except sr.UnknownValueError:
+            print("Google Speech Recognition could not understand audio")
+        except sr.RequestError as e:
+            print(f"Could not request results from Google Speech Recognition service; {e}")
+except KeyboardInterrupt:
+    # Close the file when the user stops the program
+    file.close()
+    print(f"\nRecording stopped. Audio saved to {filename}.")
